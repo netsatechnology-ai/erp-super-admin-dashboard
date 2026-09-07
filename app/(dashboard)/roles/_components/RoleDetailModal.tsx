@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShieldCheck, Check, Lock, X } from "lucide-react";
+import { ShieldCheck, Check, Lock, X, Power, PowerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomInput } from "@/components/ui/custom-input";
 
@@ -12,6 +12,7 @@ export interface Role {
   userCount: number;
   permissions: string[];
   isSystem?: boolean;
+  status: string;
 }
 
 const ALL_SYSTEM_PERMISSIONS = [
@@ -44,22 +45,35 @@ export function RoleDetailModal({
   const [roleName, setRoleName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [status, setStatus] = useState<string>("ACTIVE");
 
   useEffect(() => {
     if (role) {
       setRoleName(role.name);
       setDescription(role.description);
       setSelectedPermissions(role.permissions || []);
+      setStatus(role.status || "ACTIVE");
     }
   }, [role]);
 
   if (!isOpen || !role) return null;
 
   const togglePermission = (perm: string) => {
-    if (role.isSystem) return; // Prevent modifying core system roles if needed
+    if (role.isSystem) return;
     setSelectedPermissions((prev) =>
       prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
     );
+  };
+
+  const handleToggleStatus = (newStatus: "ACTIVE" | "DEACTIVATED") => {
+    setStatus(newStatus);
+    onSaveRole({
+      ...role,
+      name: roleName,
+      description,
+      permissions: selectedPermissions,
+      status: newStatus,
+    });
   };
 
   const handleSave = () => {
@@ -68,9 +82,12 @@ export function RoleDetailModal({
       name: roleName,
       description,
       permissions: selectedPermissions,
+      status,
     });
     onClose();
   };
+
+  const isActive = status.toUpperCase() === "ACTIVE";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
@@ -82,9 +99,20 @@ export function RoleDetailModal({
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground">
-                Role Details & Permissions
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-foreground">
+                  Role Details & Permissions
+                </h3>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    isActive
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                  }`}
+                >
+                  {status.toUpperCase()}
+                </span>
+              </div>
               <p className="text-xs text-muted-foreground">
                 View and configure access capabilities for {role.name}
               </p>
@@ -93,7 +121,7 @@ export function RoleDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -156,7 +184,7 @@ export function RoleDetailModal({
                             : "border-border bg-background"
                         }`}
                       >
-                        {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
+                      {isChecked && <Check className="h-3 w-3 stroke-3" />}
                       </div>
                     </label>
                   );
@@ -167,13 +195,39 @@ export function RoleDetailModal({
         </div>
 
         {/* Actions */}
-        <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          {!role.isSystem && (
-            <Button onClick={handleSave}>Save Changes</Button>
-          )}
+        <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+          <div>
+            {!role.isSystem &&
+              (isActive ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleToggleStatus("DEACTIVATED")}
+                  className="gap-1.5 text-xs font-semibold cursor-pointer"
+                >
+                  <PowerOff className="h-3.5 w-3.5" /> Deactivate Role
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => handleToggleStatus("ACTIVE")}
+                  className="gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                >
+                  <Power className="h-3.5 w-3.5" /> Activate Role
+                </Button>
+              ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            {!role.isSystem && (
+              <Button onClick={handleSave}>Save Changes</Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

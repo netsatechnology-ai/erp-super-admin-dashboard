@@ -7,16 +7,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-neutral">
-      {/* Persistent Left Sidebar */}
+    <div className="flex h-screen w-full overflow-hidden bg-neutral">
       <Sidebar />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-x-hidden">
-     <Header />
+      <div className="flex flex-1 flex-col h-full overflow-hidden">
+        <Header />
 
-        {/* Dynamic Page Content */}
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );
