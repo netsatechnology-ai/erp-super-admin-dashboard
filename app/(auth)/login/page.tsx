@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Lock, Phone, Loader2 } from "lucide-react";
+import { ShieldCheck, Lock, Phone, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomInput } from "@/components/ui/custom-input";
 
@@ -21,6 +21,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -74,7 +75,7 @@ export default function LoginPage() {
             Netsa Tech Admin Dashboard
           </CardTitle>
           <CardDescription className="text-muted-foreground mt-1 text-sm">
-            Sign in to access your administrative portal
+            Sign in to access admin portal
           </CardDescription>
         </CardHeader>
 
@@ -96,16 +97,30 @@ export default function LoginPage() {
               }
             />
 
-            {/* Password Input */}
-            <CustomInput
-              label="Password"
-              icon={Lock}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            {/* Password Input with Eye Toggle */}
+            <div className="relative">
+              <CustomInput
+                label="Password"
+                icon={Lock}
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-[38px] text-muted-foreground hover:text-foreground focus:outline-none transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
 
             {/* Remember Me & Forgot Password Options */}
             <div className="flex items-center justify-between text-sm">

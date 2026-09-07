@@ -23,8 +23,8 @@
   --color-neutral: #F8F9FF;
   --color-neutral-dark: #121624;
 
-  /* Typography */
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  /* Typography - Fixed to reference Next.js variable --font-sans */
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-roboto-mono), monospace;
 }
 
@@ -155,6 +155,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
+    /* Inter OpenType features for tabular numbers and precise legibility */
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
   }
 }
