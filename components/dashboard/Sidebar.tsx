@@ -28,7 +28,7 @@ const navItems: NavItem[] = [
   { label: "Receipts", href: "/receipts", icon: Receipt },
   { label: "Roles", href: "/roles", icon: ShieldCheck },
   { label: "Users", href: "/users", icon: Users },
-  { label: "Settings", href: "/settings", icon: Settings },
+
 ];
 
 export function Sidebar() {
