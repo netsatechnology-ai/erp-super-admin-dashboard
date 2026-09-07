@@ -1,0 +1,168 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ShieldCheck, Lock, Phone, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CustomInput } from "@/components/ui/custom-input";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ForgotPasswordModal } from "../_components/ForgotPasswordModal";
+import { OtpVerificationModal } from "../_components/OtpVerificationModal";
+import { ResetPasswordModal } from "../_components/ResetPasswordModal";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Modal State Control
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [recoveryPhone, setRecoveryPhone] = useState("");
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const fullPhoneNumber = `+251${phone}`;
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400; // 30 days vs 1 day
+    document.cookie = `session_token=mock_admin_token; path=/; max-age=${maxAge}; SameSite=Lax`;
+
+    console.log("Logging in with:", { phone: fullPhoneNumber, rememberMe });
+
+    router.push("/dashboard");
+    router.refresh();
+  };
+
+  // Step 1: Phone Submitted -> Open OTP Modal
+  const handlePhoneSubmitted = (fullPhone: string) => {
+    setRecoveryPhone(fullPhone);
+    setIsForgotModalOpen(false);
+    setIsOtpModalOpen(true);
+  };
+
+  // Step 2: OTP Verified -> Open Reset Password Modal
+  const handleOtpVerified = () => {
+    setIsOtpModalOpen(false);
+    setIsResetModalOpen(true);
+  };
+
+  // Step 3: Password Updated -> Close Reset Modal & Prompt Sign In
+  const handlePasswordResetSuccess = () => {
+    setIsResetModalOpen(false);
+    console.log("Password successfully reset for", recoveryPhone);
+  };
+
+  return (
+    <>
+      <Card className="w-full max-w-md border-border bg-card shadow-sm px-6 py-10">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-card-foreground">
+            Netsa Tech Admin Dashboard
+          </CardTitle>
+          <CardDescription className="text-muted-foreground mt-1 text-sm">
+            Sign in to access your administrative portal
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            {/* Phone Input with Separate +251 Box */}
+            <CustomInput
+              label="Phone Number"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+              placeholder="911234567"
+              required
+              inlinePrefix={
+                <div className="flex items-center gap-1.5">
+                  <Phone className="h-4 w-4" />
+                  <span>+251</span>
+                </div>
+              }
+            />
+
+            {/* Password Input */}
+            <CustomInput
+              label="Password"
+              icon={Lock}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+
+            {/* Remember Me & Forgot Password Options */}
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <span className="text-xs text-muted-foreground">Remember me</span>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setIsForgotModalOpen(true)}
+                className="text-xs font-medium text-primary hover:underline focus:outline-none"
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In to Dashboard"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* 1. Phone Input Modal */}
+      <ForgotPasswordModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+        onSubmitPhone={handlePhoneSubmitted}
+      />
+
+      {/* 2. 6-Digit OTP Verification Modal */}
+      <OtpVerificationModal
+        isOpen={isOtpModalOpen}
+        phoneNumber={recoveryPhone}
+        onClose={() => setIsOtpModalOpen(false)}
+        onVerified={handleOtpVerified}
+      />
+
+      {/* 3. Set New Password Modal */}
+      <ResetPasswordModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onPasswordResetSuccess={handlePasswordResetSuccess}
+      />
+    </>
+  );
+}

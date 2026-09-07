@@ -1,0 +1,160 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* --------------------------------------------------------------------------
+   * Custom Brand Palette & Tokens
+   * -------------------------------------------------------------------------- */
+  --color-primary: #3525CD;
+  --color-primary-light: #EBE8FF;
+  --color-primary-hover: #291CB0;
+
+  --color-secondary: #565E74;
+  --color-secondary-light: #EEF0F5;
+  --color-secondary-hover: #434A5E;
+
+  --color-tertiary: #005338;
+  --color-tertiary-light: #E0F5EC;
+  --color-tertiary-hover: #003B28;
+
+  --color-neutral: #F8F9FF;
+  --color-neutral-dark: #121624;
+
+  /* Typography */
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-roboto-mono), monospace;
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
+
+  /* Mapping Shadcn Semantic Colors to Custom Theme Values */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  
+  --color-primary-shadcn: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary-shadcn: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Chart & Radius Tokens */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  /* Sidebar Tokens mapped to Brand Palette */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Mapped to Hex Brand Tokens */
+  --background: #F8F9FF;
+  --foreground: #121624;
+  --card: #FFFFFF;
+  --card-foreground: #121624;
+  --popover: #FFFFFF;
+  --popover-foreground: #121624;
+  
+  /* Primary (#3525CD) & Secondary (#565E74) */
+  --primary: #3525CD;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EEF0F5;
+  --secondary-foreground: #565E74;
+  
+  --muted: #EEF0F5;
+  --muted-foreground: #565E74;
+  --accent: #EBE8FF;
+  --accent-foreground: #3525CD;
+  --destructive: #DC2626;
+  
+  /* Borders & Inputs match #EEF0F5 */
+  --border: #EEF0F5;
+  --input: #EEF0F5;
+  --ring: #3525CD;
+  
+  --radius: 0.5rem;
+
+  /* Sidebar Palette Mapping */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #565E74;
+  --sidebar-primary: #3525CD;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EBE8FF;
+  --sidebar-accent-foreground: #3525CD;
+  --sidebar-border: #EEF0F5;
+  --sidebar-ring: #3525CD;
+}
+
+.dark {
+  --background: #121624;
+  --foreground: #F8F9FF;
+  --card: #1A2035;
+  --card-foreground: #F8F9FF;
+  --popover: #1A2035;
+  --popover-foreground: #F8F9FF;
+  
+  --primary: #EBE8FF;
+  --primary-foreground: #3525CD;
+  --secondary: #434A5E;
+  --secondary-foreground: #F8F9FF;
+  
+  --muted: #434A5E;
+  --muted-foreground: #EEF0F5;
+  --accent: #291CB0;
+  --accent-foreground: #F8F9FF;
+  --destructive: #EF4444;
+  
+  --border: #434A5E;
+  --input: #434A5E;
+  --ring: #EBE8FF;
+
+  --sidebar: #121624;
+  --sidebar-foreground: #EEF0F5;
+  --sidebar-primary: #3525CD;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #291CB0;
+  --sidebar-accent-foreground: #F8F9FF;
+  --sidebar-border: #434A5E;
+  --sidebar-ring: #EBE8FF;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
