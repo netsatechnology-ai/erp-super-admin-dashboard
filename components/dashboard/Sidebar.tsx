@@ -10,7 +10,8 @@ import {
   LogOut, 
   ChevronLeft, 
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  ShieldUser
 } from "lucide-react";
 
 interface NavItem {
@@ -46,13 +47,21 @@ export function Sidebar() {
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-4 border-b border-secondary-light">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
+         {!isCollapsed && <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
+            <ShieldUser className="h-5 w-5" />
+          </div>}
+      
+          <div>
           {!isCollapsed && (
-            <span className="font-semibold text-secondary-hover truncate">ERP Admin</span>
+            <span className="font-semibold text-secondary-hover truncate">Netsa Tech</span>
           )}
+            {!isCollapsed && (
+            <p className=" text-secondary-hover text-sm  ">Admin Portal</p>
+          )}
+          </div>
+      
         </div>
+        
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="rounded-lg p-1.5 text-secondary hover:bg-neutral hover:text-secondary-hover"
