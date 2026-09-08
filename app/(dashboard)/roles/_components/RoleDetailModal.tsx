@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, Check, Lock, X, Power, PowerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomInput } from "@/components/ui/custom-input";
+import { CustomInput } from "@/components/ui/CustomInput";
 
 export interface Role {
   id: string;

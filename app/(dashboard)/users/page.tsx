@@ -230,9 +230,15 @@ export default function UsersPage() {
       {/* Top Banner Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
+        
+          <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-black tracking-tight text-foreground">
             User Management
-          </h2>
+          </h1>
+          <span className="rounded-md bg-indigo-100 dark:bg-indigo-950/80 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/40">
+            TENANT CARE
+          </span>
+        </div>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Manage admin portal users, view activity details, update status, and assign roles.
           </p>

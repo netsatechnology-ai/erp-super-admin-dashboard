@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { UserPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomInput } from "@/components/ui/custom-input";
+import { CustomInput } from "@/components/ui/CustomInput";
 
 interface AddUserModalProps {
   isOpen: boolean;

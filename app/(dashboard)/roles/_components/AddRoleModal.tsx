@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ShieldPlus, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomInput } from "@/components/ui/custom-input";
+import { CustomInput } from "@/components/ui/CustomInput";
 import { Role } from "./RoleDetailModal";
 
 export const AVAILABLE_PERMISSIONS = [

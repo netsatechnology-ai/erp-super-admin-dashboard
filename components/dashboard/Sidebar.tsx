@@ -6,14 +6,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Store, 
-  Receipt, 
+
   ShieldCheck, 
   Users, 
-  Settings, 
+
   LogOut, 
   ChevronLeft, 
   ChevronRight,
-  ShieldUser
+  ShieldUser,
+  FolderTree,
+  ReceiptText
 } from "lucide-react";
 
 interface NavItem {
@@ -23,9 +25,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, // or "/"
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, 
   { label: "Merchants", href: "/merchants", icon: Store },
-  { label: "Receipts", href: "/receipts", icon: Receipt },
+  { label: "Merchant Category", href: "/merchant-categories", icon: FolderTree },
+  { label: "Transactions", href: "/transactions", icon: ReceiptText },
   { label: "Roles", href: "/roles", icon: ShieldCheck },
   { label: "Users", href: "/users", icon: Users },
 

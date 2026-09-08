@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Lock, Phone, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomInput } from "@/components/ui/custom-input";
+import { CustomInput } from "@/components/ui/CustomInput";
 
 import {
   Card,
