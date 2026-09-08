@@ -50,6 +50,7 @@ export function AddRoleModal({ isOpen, onClose, onAddRole }: AddRoleModalProps) 
       userCount: 0,
       permissions: selectedPermissions,
       isSystem: false,
+      status:""
     };
 
     onAddRole(newRole);
