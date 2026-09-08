@@ -10,6 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAppDispatch } from "@/lib/redux/store";
+import { showLoader, hideLoader } from "@/lib/redux/slices/loadingSlice";
+import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
+import { AuthService } from "@/services/AuthService";
 
 interface OtpVerificationModalProps {
   isOpen: boolean;
@@ -28,15 +32,20 @@ export function OtpVerificationModal({
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(60);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const dispatch = useAppDispatch();
 
-  // Countdown timer for Resend OTP
+  // Reset timer & inputs when modal opens
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isOpen && timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    if (isOpen) {
+      setTimer(60);
+      setOtp(Array(6).fill(""));
+      if (timer > 0) {
+        interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      }
     }
     return () => clearInterval(interval);
-  }, [isOpen, timer]);
+  }, [isOpen]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -45,7 +54,7 @@ export function OtpVerificationModal({
     newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
 
-    // Auto-advance to next input field
+    // Auto-advance to next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -57,25 +66,112 @@ export function OtpVerificationModal({
     }
   };
 
-  const handleResend = () => {
-    setTimer(60);
-    setOtp(Array(6).fill(""));
-    inputRefs.current[0]?.focus();
-    console.log("Resending OTP to:", phoneNumber);
+  // Support pasting full 6-digit OTP code
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasteData.length === 6) {
+      const newOtp = pasteData.split("");
+      setOtp(newOtp);
+      inputRefs.current[5]?.focus();
+    }
   };
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleResend = async () => {
+    dispatch(showLoader("Resending OTP code..."));
+
+    try {
+      const response = await AuthService.sendForgetOtp({ phone: phoneNumber });
+      dispatch(hideLoader());
+
+      if (response) {
+        setTimer(60);
+        setOtp(Array(6).fill(""));
+        inputRefs.current[0]?.focus();
+
+        dispatch(
+          showResponseModal({
+            status: "success",
+            title: "OTP Resent",
+            message: `A new 6-digit verification code has been sent to ${phoneNumber}.`,
+            buttonText: "OK",
+          })
+        );
+      } else {
+        dispatch(
+          showResponseModal({
+            status: "error",
+            title: "Resend Failed",
+            message: "Unable to resend OTP code. Please try again.",
+            buttonText: "Try Again",
+          })
+        );
+      }
+    } catch (error: any) {
+      dispatch(hideLoader());
+      dispatch(
+        showResponseModal({
+          status: "error",
+          title: "Error",
+          message: error?.response?.data?.message || "Failed to resend code.",
+        })
+      );
+    }
+  };
+
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
     const fullCode = otp.join("");
-    console.log("Verifying OTP:", fullCode, "for", phoneNumber);
+    if (fullCode.length !== 6) return;
 
-    // Mock API call simulation
-    setTimeout(() => {
+    setIsLoading(true);
+    dispatch(showLoader("Verifying OTP code..."));
+
+    try {
+      const response = await AuthService.verifyOtp({
+        phone: phoneNumber,
+        code: fullCode,
+      });
+
+      dispatch(hideLoader());
+
+      if (response) {
+        onClose();
+        onVerified();
+
+        dispatch(
+          showResponseModal({
+            status: "success",
+            title: "Verification Successful",
+            message: "Your phone number has been verified successfully.",
+            buttonText: "Proceed",
+          })
+        );
+      } else {
+        dispatch(
+          showResponseModal({
+            status: "error",
+            title: "Verification Failed",
+            message: "Invalid or expired OTP code. Please try again.",
+            buttonText: "Try Again",
+          })
+        );
+      }
+    } catch (error: any) {
+      dispatch(hideLoader());
+      dispatch(
+        showResponseModal({
+          status: "error",
+          title: "Error",
+          message:
+            error?.response?.data?.message ||
+            "Verification failed. Please check your network connection.",
+          buttonText: "OK",
+        })
+      );
+    } finally {
       setIsLoading(false);
-      onVerified();
-    }, 800);
+    }
   };
 
   return (
@@ -106,6 +202,7 @@ export function OtpVerificationModal({
                 value={digit}
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
+                onPaste={handlePaste}
                 className="h-12 w-12 text-center text-lg font-bold rounded-md border border-input bg-background text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             ))}
@@ -115,12 +212,14 @@ export function OtpVerificationModal({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Didn't receive code?</span>
             {timer > 0 ? (
-              <span>Resend in <strong className="text-foreground">{timer}s</strong></span>
+              <span>
+                Resend in <strong className="text-foreground">{timer}s</strong>
+              </span>
             ) : (
               <button
                 type="button"
                 onClick={handleResend}
-                className="font-medium text-primary hover:underline focus:outline-none"
+                className="font-medium text-primary hover:underline focus:outline-none cursor-pointer"
               >
                 Resend OTP
               </button>

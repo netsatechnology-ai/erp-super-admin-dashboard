@@ -11,6 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAppDispatch } from "@/lib/redux/store";
+import { showLoader, hideLoader } from "@/lib/redux/slices/loadingSlice";
+import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
+import { AuthService } from "@/services/AuthService";
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -25,24 +29,72 @@ export function ForgotPasswordModal({
 }: ForgotPasswordModalProps) {
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Strip non-numeric characters and cap at 9 digits
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numericValue = e.target.value.replace(/\D/g, "").slice(0, 9);
+    setPhone(numericValue);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (phone.length !== 9) return;
 
+    setIsLoading(true);
     const fullPhoneNumber = `+251${phone}`;
 
-    // Mock API call simulation
-    setTimeout(() => {
+    dispatch(showLoader("Sending OTP code..."));
+
+    try {
+      const response = await AuthService.sendForgetOtp({ phone: fullPhoneNumber });
+
+      dispatch(hideLoader());
+
+      if (response) {
+        onClose();
+        onSubmitPhone(fullPhoneNumber);
+        setPhone("");
+
+        dispatch(
+          showResponseModal({
+            status: "success",
+            title: "OTP Sent Successfully",
+            message: `A 6-digit verification code has been sent to ${fullPhoneNumber}.`,
+            buttonText: "Enter Code",
+          })
+        );
+      } else {
+        dispatch(
+          showResponseModal({
+            status: "error",
+            title: "Failed to Send OTP",
+            message: "The phone number provided is not registered.",
+            buttonText: "Try Again",
+          })
+        );
+      }
+    } catch (error: any) {
+      dispatch(hideLoader());
+
+      dispatch(
+        showResponseModal({
+          status: "error",
+          title: "Error",
+          message:
+            error?.response?.data?.message ||
+            "Unable to send OTP code. Please check your connection.",
+          buttonText: "OK",
+        })
+      );
+    } finally {
       setIsLoading(false);
-      onSubmitPhone(fullPhoneNumber);
-      setPhone("");
-    }, 600);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md border-border bg-card ">
+      <DialogContent className="sm:max-w-md border-border bg-card">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-card-foreground">
             Forgot Password
@@ -57,8 +109,9 @@ export function ForgotPasswordModal({
             label="Phone Number"
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+            onChange={handlePhoneChange}
             placeholder="911234567"
+            maxLength={9}
             required
             inlinePrefix={
               <div className="flex items-center gap-1.5">
@@ -72,7 +125,7 @@ export function ForgotPasswordModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || phone.length < 8}>
+            <Button type="submit" disabled={isLoading || phone.length !== 9}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

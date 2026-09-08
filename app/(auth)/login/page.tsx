@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, Lock, Phone, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomInput } from "@/components/ui/CustomInput";
-
+import { showLoader, hideLoader } from "@/lib/redux/slices/loadingSlice";
 import {
   Card,
   CardContent,
@@ -16,9 +16,14 @@ import {
 import { ForgotPasswordModal } from "../_components/ForgotPasswordModal";
 import { OtpVerificationModal } from "../_components/OtpVerificationModal";
 import { ResetPasswordModal } from "../_components/ResetPasswordModal";
+import { AuthService } from "@/services/AuthService";
+import { useAppDispatch } from "@/lib/redux/store";
+import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
 
 export default function LoginPage() {
+  const dispatch = useAppDispatch();
   const router = useRouter();
+
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -33,16 +38,72 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    const fullPhoneNumber = `+251${phone}`;
-    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400; // 30 days vs 1 day
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400;
     document.cookie = `session_token=mock_admin_token; path=/; max-age=${maxAge}; SameSite=Lax`;
 
-    console.log("Logging in with:", { phone: fullPhoneNumber, rememberMe });
-
     router.push("/dashboard");
+
     router.refresh();
+    // setIsLoading(true);
+
+    // dispatch(showLoader("Authenticating credentials..."));
+
+
+    // const data = {
+    //   phone: `+251${phone}`,
+    //   password: password,
+    // };
+
+    // AuthService.logIn(data)
+    //   .then((response) => {
+    //     dispatch(hideLoader());
+
+    //     if (response) {
+    //       const fullPhoneNumber = `+251${phone}`;
+    //       const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400;
+    //       document.cookie = `session_token=mock_admin_token; path=/; max-age=${maxAge}; SameSite=Lax`;
+
+    //       // Show Success Modal before redirecting
+    //       dispatch(
+    //         showResponseModal({
+    //           status: "success",
+    //           title: "Welcome Back!",
+    //           message: "Authentication successful. Redirecting to dashboard...",
+    //           buttonText: "Proceed",
+    //           onConfirm: () => {
+    //             router.push("/dashboard");
+    //             router.refresh();
+    //           },
+    //         })
+    //       );
+    //     } else {
+    //       // Show Error Modal
+    //       dispatch(
+    //         showResponseModal({
+    //           status: "error",
+    //           title: "Login Failed",
+    //           message: "Invalid phone number or password. Please try again.",
+    //           buttonText: "Try Again",
+    //         })
+    //       );
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     dispatch(hideLoader());
+    //     dispatch(
+    //       showResponseModal({
+    //         status: "error",
+    //         title: "Network Error",
+    //         message: "Unable to reach the server. Please check your connection.",
+    //       })
+    //     );
+
+    //   })
+    //   .finally(() => {
+    //     setIsLoading(false);
+    //          const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400;
+    //       document.cookie = `session_token=mock_admin_token; path=/; max-age=${maxAge}; SameSite=Lax`;
+    //   });
   };
 
   // Step 1: Phone Submitted -> Open OTP Modal
