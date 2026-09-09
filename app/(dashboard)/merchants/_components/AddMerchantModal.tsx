@@ -12,6 +12,9 @@ import {
   CheckCircle2,
   FileBadge,
   Loader2,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomInput } from "@/components/ui/CustomInput";
@@ -49,6 +52,8 @@ export function AddMerchantModal({
   const [tinNumber, setTinNumber] = useState("");
   const [managerName, setManagerName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [managerIdFile, setManagerIdFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +66,8 @@ export function AddMerchantModal({
     setTinNumber("");
     setManagerName("");
     setContactPhone("");
+    setPassword("");
+    setShowPassword(false);
     setLicenseFile(null);
     setManagerIdFile(null);
   };
@@ -91,16 +98,17 @@ export function AddMerchantModal({
     try {
       const formData = new FormData();
       formData.append("name", name);
-      formData.append("category", category);
-      formData.append("tinNumber", tinNumber);
-      formData.append("managerName", managerName);
-      formData.append("contactPhone", contactPhone);
+      formData.append("categoryId", category);
+      formData.append("tin", tinNumber);
+      formData.append("managerFullName", managerName);
+      formData.append("managerPhoneNumber", contactPhone);
+      formData.append("password", password);
 
       if (licenseFile) {
-        formData.append("licenseFile", licenseFile);
+        formData.append("businessLicense", licenseFile);
       }
       if (managerIdFile) {
-        formData.append("managerIdFile", managerIdFile);
+        formData.append("managerId", managerIdFile);
       }
 
       const response = await MerchantService.addMerchant(formData);
@@ -110,7 +118,7 @@ export function AddMerchantModal({
       if (response) {
         // Fallback fallback object formatting if backend returns basic payload
         const createdMerchant: Merchant = response.data || {
-          id: response.data.id || `mch-${Date.now()}`,
+          id: response.data?.id || `mch-${Date.now()}`,
           name,
           category,
           tinNumber,
@@ -146,13 +154,28 @@ export function AddMerchantModal({
       }
     } catch (error: any) {
       dispatch(hideLoader());
+
+      const status = error?.response?.status;
+      let errorMessage = "An error occurred while connecting to MerchantService.";
+
+      if (status === 404) {
+        errorMessage =
+          "The merchant onboarding endpoint was not found on the server. Please verify the API route configuration.";
+      } else if (error?.response?.data) {
+        const serverData = error.response.data;
+        errorMessage =
+          typeof serverData === "string"
+            ? serverData
+            : serverData.message || serverData.error || errorMessage;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
       dispatch(
         showResponseModal({
           status: "error",
-          title: "Registration Error",
-          message:
-            error?.response?.data?.message ||
-            "An error occurred while connecting to MerchantService.",
+          title: status ? `Request Error (${status})` : "Registration Error",
+          message: errorMessage,
           buttonText: "Close",
         })
       );
@@ -178,7 +201,8 @@ export function AddMerchantModal({
           <button
             onClick={handleClose}
             type="button"
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            disabled={isSubmitting}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
           >
             <X className="h-5 w-5" />
           </button>
@@ -199,6 +223,7 @@ export function AddMerchantModal({
               placeholder="e.g. Sunrise Grocery Hub"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={isSubmitting}
               required
             />
 
@@ -208,6 +233,7 @@ export function AddMerchantModal({
               as="select"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              disabled={isSubmitting}
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -239,6 +265,7 @@ export function AddMerchantModal({
             className="font-mono font-bold"
             value={tinNumber}
             onChange={(e) => setTinNumber(e.target.value)}
+            disabled={isSubmitting}
             required
           />
 
@@ -247,11 +274,12 @@ export function AddMerchantModal({
             <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
               BUSINESS LICENSE UPLOAD <span className="text-rose-500">*</span>
             </label>
-            <label className="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-slate-900/40 p-5 text-center cursor-pointer transition-colors hover:border-indigo-400">
+            <label className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-slate-900/40 p-5 text-center transition-colors hover:border-indigo-400 ${isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
               <input
                 type="file"
                 accept=".pdf,.png,.jpg,.jpeg"
                 onChange={handleLicenseUpload}
+                disabled={isSubmitting}
                 className="hidden"
               />
               <div className="rounded-xl bg-indigo-100 dark:bg-indigo-950/80 p-3 text-indigo-600 dark:text-indigo-400 mb-2">
@@ -283,19 +311,48 @@ export function AddMerchantModal({
               placeholder="e.g. Kaleb Worku"
               value={managerName}
               onChange={(e) => setManagerName(e.target.value)}
+              disabled={isSubmitting}
               required
             />
 
             <CustomInput
-              label="CONTACT PHONE"
+              label="MANAGER PHONE"
               requiredStar
               leftIcon={<Phone className="h-4 w-4" />}
               placeholder="e.g. +251 911 448 839"
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
+              disabled={isSubmitting}
               required
             />
           </div>
+
+          {/* Row 4: Password Field */}
+          <CustomInput
+            label="ACCOUNT PASSWORD"
+            requiredStar
+            type={showPassword ? "text" : "password"}
+            leftIcon={<Lock className="h-4 w-4" />}
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            }
+            placeholder="Enter temporary password for manager account"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isSubmitting}
+            required
+          />
 
           {/* Manager ID Upload Banner */}
           <div>
@@ -318,11 +375,12 @@ export function AddMerchantModal({
                   </p>
                 </div>
               </div>
-              <label className="cursor-pointer">
+              <label className={`cursor-pointer ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}>
                 <input
                   type="file"
                   accept=".pdf,.png,.jpg,.jpeg"
                   onChange={handleManagerIdUpload}
+                  disabled={isSubmitting}
                   className="hidden"
                 />
                 <span className="inline-flex items-center justify-center rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-bold uppercase text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950 transition-colors">
@@ -345,7 +403,7 @@ export function AddMerchantModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !name || !tinNumber || !managerName || !contactPhone}
+              disabled={isSubmitting || !name || !tinNumber || !managerName || !contactPhone || !password}
               className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-5 rounded-xl shadow-xs"
             >
               {isSubmitting ? (

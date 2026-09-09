@@ -50,7 +50,7 @@ export default function LoginPage() {
 
 
     // const data = {
-    //   phone: `+251${phone}`,
+    //   phoneNumber: `+251${phone}`,
     //   password: password,
     // };
 
