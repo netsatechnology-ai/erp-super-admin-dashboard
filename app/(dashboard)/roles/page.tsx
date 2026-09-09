@@ -22,26 +22,86 @@ const INITIAL_ROLES: Role[] = [
   {
     id: "r1",
     name: "Super Admin",
-    description: "Full platform access and management capabilities across all organizations.",
+    description:
+      "Full platform access and management capabilities across all organizations.",
     userCount: 3,
-    permissions: ["Full Access", "User Management", "Roles & Permissions", "Merchant Approval", "System Configuration"],
+    permissions: [
+      "dashboard:system:view",
+      "dashboard:merchant:view",
+      "transaction:read",
+      "transaction:refund",
+      "transaction:export",
+      "invoice:create",
+      "invoice:read",
+      "invoice:update",
+      "invoice:cancel",
+      "invoice:print",
+      "inventory:item:create",
+      "inventory:item:read",
+      "inventory:item:update",
+      "inventory:item:delete",
+      "stock:level:read",
+      "stock:adjust",
+      "stock:transfer",
+      "stock:supplier:manage",
+      "system:superadmin",
+      "system:audit_logs:read",
+      "user:create",
+      "user:read",
+      "user:update",
+      "user:delete",
+      "user:status:change",
+      "merchant:create",
+      "merchant:read",
+      "merchant:update",
+      "merchant:delete",
+      "merchant:status:change",
+      "merchant_category:create",
+      "merchant_category:read",
+      "merchant_category:update",
+      "merchant_category:delete",
+      "role:create",
+      "role:read",
+      "role:update",
+      "role:delete",
+      "user_role:assign",
+      "user_role:revoke",
+      "user_role:read",
+    ],
     isSystem: true,
     status: "ACTIVE",
   },
   {
     id: "r2",
     name: "Merchant Manager",
-    description: "Oversees merchant onboarding, verification, and settlement records.",
+    description:
+      "Oversees merchant onboarding, verification, and settlement records.",
     userCount: 14,
-    permissions: ["View Merchants", "Edit Merchants", "Approve Outlets", "View Receipts"],
+    permissions: [
+      "merchant:create",
+      "merchant:read",
+      "merchant:update",
+      "merchant:status:change",
+      "merchant_category:read",
+      "transaction:read",
+      "invoice:read",
+    ],
     status: "ACTIVE",
   },
   {
     id: "r3",
     name: "Auditor & Support",
-    description: "Read-only access for compliance inspection and system activity log tracking.",
+    description:
+      "Read-only access for compliance inspection and system activity log tracking.",
     userCount: 8,
-    permissions: ["View Receipts", "View Audit Logs", "Export Reports"],
+    permissions: [
+      "system:audit_logs:read",
+      "transaction:read",
+      "transaction:export",
+      "invoice:read",
+      "merchant:read",
+      "user:read",
+    ],
     status: "DEACTIVATED",
   },
 ];
@@ -116,7 +176,7 @@ export default function RolesPage() {
               className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 shadow-xs text-xs font-bold"
             >
               <Plus className="h-4 w-4" />
-              <span>+ Add New Role</span>
+              <span>Add New Role</span>
             </Button>
           </div>
         </div>

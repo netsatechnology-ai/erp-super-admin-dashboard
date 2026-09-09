@@ -17,7 +17,7 @@ export function GlobalLoader() {
                 </div>
                 <div>
 
-                    {message && <p className="text-xs text-muted-foreground mt-0.5">
+                    {message && <p className="text-xs text-muted-foreground mt-0.5 p-5">
                         {message}
                     </p>}
 
