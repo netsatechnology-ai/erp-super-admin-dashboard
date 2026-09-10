@@ -38,72 +38,70 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400;
-    document.cookie = `session_token=mock_admin_token; path=/; max-age=${maxAge}; SameSite=Lax`;
+    setIsLoading(true);
 
-    router.push("/dashboard");
+    dispatch(showLoader());
 
-    router.refresh();
-    // setIsLoading(true);
+    const data = {
+      phoneNumber: `0${phone}`,
+      password: password,
+    };
 
-    // dispatch(showLoader("Authenticating credentials..."));
+    AuthService.logIn(data)
+      .then((response: any) => {
+        dispatch(hideLoader());
 
+        const token = response?.accessToken;
 
-    // const data = {
-    //   phoneNumber: `+251${phone}`,
-    //   password: password,
-    // };
+        if (token) {
+          // 1. Save token to sessionStorage for apiClient interceptor
+          sessionStorage.setItem("token", token);
+          router.push("/dashboard");
+          router.refresh();
+        } else {
+          dispatch(
+            showResponseModal({
+              status: "error",
+              title: "Login Failed",
+              message:
+                response?.message ||
+                "Invalid phone number or password. Please try again.",
+              buttonText: "Try Again",
+            }),
+          );
+        }
+      })
+      .catch((error: any) => {
+        dispatch(hideLoader());
 
-    // AuthService.logIn(data)
-    //   .then((response) => {
-    //     dispatch(hideLoader());
+        const status = error?.response?.status;
+        let errorMessage =
+          "Unable to reach the server. Please check your connection.";
 
-    //     if (response) {
-    //       const fullPhoneNumber = `+251${phone}`;
-    //       const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400;
-    //       document.cookie = `session_token=mock_admin_token; path=/; max-age=${maxAge}; SameSite=Lax`;
+        if (error?.response?.data) {
+          const serverData = error.response.data;
+          errorMessage =
+            typeof serverData === "string"
+              ? serverData
+              : serverData.message || serverData.error || errorMessage;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
 
-    //       // Show Success Modal before redirecting
-    //       dispatch(
-    //         showResponseModal({
-    //           status: "success",
-    //           title: "Welcome Back!",
-    //           message: "Authentication successful. Redirecting to dashboard...",
-    //           buttonText: "Proceed",
-    //           onConfirm: () => {
-    //             router.push("/dashboard");
-    //             router.refresh();
-    //           },
-    //         })
-    //       );
-    //     } else {
-    //       // Show Error Modal
-    //       dispatch(
-    //         showResponseModal({
-    //           status: "error",
-    //           title: "Login Failed",
-    //           message: "Invalid phone number or password. Please try again.",
-    //           buttonText: "Try Again",
-    //         })
-    //       );
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     dispatch(hideLoader());
-    //     dispatch(
-    //       showResponseModal({
-    //         status: "error",
-    //         title: "Network Error",
-    //         message: "Unable to reach the server. Please check your connection.",
-    //       })
-    //     );
-
-    //   })
-    //   .finally(() => {
-    //     setIsLoading(false);
-    //          const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400;
-    //       document.cookie = `session_token=mock_admin_token; path=/; max-age=${maxAge}; SameSite=Lax`;
-    //   });
+        dispatch(
+          showResponseModal({
+            status: "error",
+            title: status
+              ? `Authentication Error (${status})`
+              : "Network Error",
+            message: errorMessage,
+            buttonText: "Try Again",
+          }),
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   // Step 1: Phone Submitted -> Open OTP Modal
@@ -192,7 +190,9 @@ export default function LoginPage() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                 />
-                <span className="text-xs text-muted-foreground">Remember me</span>
+                <span className="text-xs text-muted-foreground">
+                  Remember me
+                </span>
               </label>
 
               <button

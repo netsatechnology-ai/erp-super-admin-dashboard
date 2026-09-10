@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Define public and protected route patterns
+// Only list public authentication routes
 const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
-const PROTECTED_PREFIXES = ["/dashboard", "/users", "/settings"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -11,18 +10,19 @@ export function middleware(request: NextRequest) {
   // Retrieve session token from cookies
   const token = request.cookies.get("session_token")?.value;
 
-  const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
-  const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
 
-  // 1. Unauthenticated user trying to access a protected route
-  if (isProtectedRoute && !token) {
+  // 1. Unauthenticated user trying to access ANY route that isn't public (e.g. /roles, /dashboard, /users)
+  if (!token && !isPublicRoute) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname); // Redirect back after login
+    loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Authenticated user trying to access auth pages
-  if (isPublicRoute && token) {
+  // 2. Authenticated user trying to access public auth pages (e.g. /login)
+  if (token && isPublicRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
@@ -30,6 +30,8 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match all request paths except static files, images, and API routes
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Exclude static files, Next.js internals, public assets, and API routes
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js)$).*)",
+  ],
 };

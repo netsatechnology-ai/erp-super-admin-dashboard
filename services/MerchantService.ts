@@ -8,18 +8,13 @@ export class MerchantService {
       },
     });
   }
+  static async fetchCatagories(search: string) {
+    return apiClient.get(`/api/v1/merchants/categories?search=${search}`);
+  }
   static async updateCategory(id: string, data: any) {
-    return apiClient.patch(`/admin/merchant/updateCatagory/${id}`, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return apiClient.patch(`/api/v1/merchants/categories/${id}`, data);
   }
   static async addCategory(data: any) {
-    return apiClient.patch("/admin/merchant/addCatagory", data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return apiClient.post("/api/v1/merchants/categories", data);
   }
 }

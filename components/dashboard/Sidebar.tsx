@@ -3,19 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Store, 
-
-  ShieldCheck, 
-  Users, 
-
-  LogOut, 
-  ChevronLeft, 
+import {
+  LayoutDashboard,
+  Store,
+  ShieldCheck,
+  Users,
+  LogOut,
+  ChevronLeft,
   ChevronRight,
   ShieldUser,
   FolderTree,
-  ReceiptText
+  ReceiptText,
 } from "lucide-react";
 
 interface NavItem {
@@ -25,13 +23,16 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }, 
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Merchants", href: "/merchants", icon: Store },
-  { label: "Merchant Category", href: "/merchant-categories", icon: FolderTree },
+  {
+    label: "Merchant Category",
+    href: "/merchant-categories",
+    icon: FolderTree,
+  },
   { label: "Transactions", href: "/transactions", icon: ReceiptText },
   { label: "Roles", href: "/roles", icon: ShieldCheck },
   { label: "Users", href: "/users", icon: Users },
-
 ];
 
 export function Sidebar() {
@@ -40,8 +41,7 @@ export function Sidebar() {
   const router = useRouter();
 
   const handleLogout = () => {
-    // Clear session cookie and redirect to login
-    document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    sessionStorage.removeItem("token");
     router.push("/login");
     router.refresh();
   };
@@ -77,7 +77,11 @@ export function Sidebar() {
           className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {isCollapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
         </button>
       </div>
 
@@ -85,7 +89,7 @@ export function Sidebar() {
       <nav className="flex-1 space-y-1.5 p-3">
         {navItems.map((item) => {
           const Icon = item.icon;
-          
+
           // Exact match for dashboard root, startsWith for child routes
           const isActive =
             item.href === "/dashboard"
@@ -105,7 +109,9 @@ export function Sidebar() {
             >
               <Icon
                 className={`h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground group-hover:text-foreground"
                 }`}
               />
               {!isCollapsed && <span className="truncate">{item.label}</span>}

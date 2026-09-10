@@ -3,6 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
+import AuthGuard from "./AuthGuard";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", inter.variable)}>
       <body className="antialiased bg-background text-foreground">
-        <Providers>{children}</Providers>
+        <Providers>
+          <AuthGuard>
+          {children}
+          </AuthGuard></Providers>
       </body>
     </html>
   );

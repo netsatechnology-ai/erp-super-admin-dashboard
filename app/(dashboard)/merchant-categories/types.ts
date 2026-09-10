@@ -3,7 +3,9 @@ export interface CategoryItem {
   name: string;
   code: string;
   description: string;
-  linkedMerchants: number;
-  taxRule: string;
+  linkedMerchantCount: number;
+  defaultTaxPolicy: string;
   status: "ACTIVE" | "DEACTIVATED";
+  createdDate?:string ,
+  updatedDate?:string ,
 }
