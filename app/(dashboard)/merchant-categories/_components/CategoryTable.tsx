@@ -3,12 +3,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, MoreVertical, Edit2, Power, CheckCircle2 } from "lucide-react";
 import { CategoryItem } from "../types";
+import { useAppDispatch } from "@/lib/redux/store";
+import { MerchantService } from "@/services/MerchantService";
+import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
 
 interface CategoryTableProps {
-  categories: CategoryItem[];
+  categories: CategoryItem[] | null;
   selectedCategoryId: string | null;
   onSelectCategory: (category: CategoryItem) => void;
-  onToggleStatus?: (categoryId: string, currentStatus: "ACTIVE" | "DEACTIVATED") => void;
+  onToggleStatus?: (categoryId: string, nextStatus: "ACTIVE" | "INACTIVE") => void;
 }
 
 export function CategoryTable({
@@ -17,13 +20,13 @@ export function CategoryTable({
   onSelectCategory,
   onToggleStatus,
 }: CategoryTableProps) {
+  const dispatch = useAppDispatch();
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"ALL" | "ACTIVE" | "DEACTIVATED">("ALL");
+  const [activeTab, setActiveTab] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -34,18 +37,18 @@ export function CategoryTable({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredCategories = categories.filter((cat) => {
+  const filteredCategories = categories?.filter((cat) => {
     const matchesSearch =
       cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cat.code.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (activeTab === "ACTIVE") return matchesSearch && cat.status === "ACTIVE";
-    if (activeTab === "DEACTIVATED") return matchesSearch && cat.status === "DEACTIVATED";
+    if (activeTab === "INACTIVE") return matchesSearch && cat.status === "INACTIVE";
     return matchesSearch;
   });
 
-  const activeCount = categories.filter((c) => c.status === "ACTIVE").length;
-  const deactivatedCount = categories.filter((c) => c.status === "DEACTIVATED").length;
+  const activeCount = categories?.filter((c) => c.status === "ACTIVE").length || 0;
+  const deactivatedCount = categories?.filter((c) => c.status === "INACTIVE").length || 0;
 
   const handleMenuToggle = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -53,16 +56,55 @@ export function CategoryTable({
   };
 
   const handleEdit = (e: React.MouseEvent, item: CategoryItem) => {
+    console.log("itemitemitem",item)
     e.stopPropagation();
     setOpenMenuId(null);
     onSelectCategory(item);
   };
 
-  const handleStatusToggle = (e: React.MouseEvent, item: CategoryItem) => {
+  const handleStatusToggle = async (e: React.MouseEvent, item: CategoryItem) => {
     e.stopPropagation();
     setOpenMenuId(null);
+
+    const previousStatus = item.status;
+    const nextStatus: "ACTIVE" | "INACTIVE" =
+      previousStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+
+    // 1. OPTIMISTIC UPDATE: Update UI immediately
     if (onToggleStatus) {
-      onToggleStatus(item.id, item.status);
+      onToggleStatus(item.id, nextStatus);
+    }
+
+    try {
+      // 2. Perform API request in background
+      await MerchantService.updateCategory(item.id, {status:nextStatus});
+
+      // Success notification (non-blocking)
+      dispatch(
+        showResponseModal({
+          status: "success",
+          title: "Status Updated",
+          message: `"${item.name}" is now ${nextStatus.toLowerCase()}.`,
+          buttonText: "Done",
+        })
+      );
+    } catch (error: any) {
+      // 3. REVERT STATE on error
+      if (onToggleStatus) {
+        onToggleStatus(item.id, previousStatus);
+      }
+
+      dispatch(
+        showResponseModal({
+          status: "error",
+          title: "Update Failed",
+          message:
+            error?.response?.data?.message ||
+            error?.message ||
+            "Failed to update category status. Changes were reverted.",
+          buttonText: "Close",
+        })
+      );
     }
   };
 
@@ -91,7 +133,7 @@ export function CategoryTable({
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            ALL ({categories.length})
+            ALL ({categories?.length || 0})
           </button>
           <button
             type="button"
@@ -106,14 +148,14 @@ export function CategoryTable({
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("DEACTIVATED")}
+            onClick={() => setActiveTab("INACTIVE")}
             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "DEACTIVATED"
+              activeTab === "INACTIVE"
                 ? "bg-indigo-600 text-white shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            DEACTIVATED ({deactivatedCount})
+            INACTIVE ({deactivatedCount})
           </button>
         </div>
       </div>
@@ -133,7 +175,7 @@ export function CategoryTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 font-medium">
-              {filteredCategories.map((item) => {
+              {filteredCategories?.map((item) => {
                 const isSelected = selectedCategoryId === item.id;
                 const isMenuOpen = openMenuId === item.id;
 
@@ -176,7 +218,7 @@ export function CategoryTable({
 
                     <td className="py-3 px-4 text-center">
                       <span
-                        className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-extrabold ${
+                        className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-extrabold transition-colors ${
                           item.status === "ACTIVE"
                             ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300"
                             : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
@@ -241,7 +283,9 @@ export function CategoryTable({
         </div>
 
         <div className="flex items-center justify-between px-4 py-2.5 border-t border-border/80 bg-muted/20 text-[10px] font-mono text-muted-foreground">
-          <span>Showing {filteredCategories.length} of {categories.length} sectors registered</span>
+          <span>
+            Showing {filteredCategories?.length || 0} of {categories?.length || 0} sectors registered
+          </span>
           <span>NPO-CAT-V2.5 REV: 2025.02</span>
         </div>
       </div>

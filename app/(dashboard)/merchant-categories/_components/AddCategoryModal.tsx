@@ -31,9 +31,9 @@ export function AddCategoryModal({
   const [catCode, setCatCode] = useState("");
   const [catDescription, setCatDescription] = useState("");
   const [taxPolicy, setTaxPolicy] = useState("VAT 15% (Standard Output)");
-  const [isCategoryEnabled, setIsCategoryEnabled] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+console.log("oooooooo",selectedCategory)
   useEffect(() => {
     if (selectedCategory) {
       setCatName(selectedCategory.name);
@@ -46,7 +46,7 @@ export function AddCategoryModal({
           ? "Standard Exempt"
           : "VAT 15% (Standard Output)"
       );
-      setIsCategoryEnabled(selectedCategory.status === "ACTIVE");
+
     } else {
       resetFormFields();
     }
@@ -57,7 +57,7 @@ export function AddCategoryModal({
     setCatCode("");
     setCatDescription("");
     setTaxPolicy("VAT 15% (Standard Output)");
-    setIsCategoryEnabled(true);
+  
   };
 
   const handleResetForm = () => {
@@ -115,9 +115,9 @@ export function AddCategoryModal({
       dispatch(hideLoader());
 
       if (response) {
-        const savedCategory: CategoryItem = response.data || {
+        const savedCategory: CategoryItem = response.category || {
           id: selectedCategory?.id || response.id || `cat-${Date.now()}`,
-          linkedMerchantCount: selectedCategory?.linkedMerchantCount || 0,
+          linkedMerchantCount: selectedCategory?.linkedMerchantCount || 0,...selectedCategory,
           ...payload,
         };
 
@@ -268,7 +268,7 @@ export function AddCategoryModal({
             <option value="Standard Exempt">Standard Exempt</option>
           </CustomInput>
 
-          <div className="flex items-center justify-between rounded-xl bg-indigo-50/40 dark:bg-slate-900/40 p-3 border border-border/60">
+          {/* <div className="flex items-center justify-between rounded-xl bg-indigo-50/40 dark:bg-slate-900/40 p-3 border border-border/60">
             <div>
               <p className="text-xs font-bold text-foreground">
                 Category Status
@@ -293,7 +293,7 @@ export function AddCategoryModal({
                 } my-0.5`}
               />
             </button>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-2 pt-2">
             <Button

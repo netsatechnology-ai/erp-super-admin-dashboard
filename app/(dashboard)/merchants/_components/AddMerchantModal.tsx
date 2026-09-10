@@ -30,14 +30,239 @@ interface AddMerchantModalProps {
   onAddMerchant: (merchant: Merchant) => void;
 }
 
-const CATEGORIES = [
-  "Retail & Supermarket",
-  "Pharmacy & Healthcare",
-  "Restaurant & Cafe",
-  "Logistics & Express",
-  "Hospitality & Hotel",
-  "Electronics & Appliances",
-];
+const CATEGORIES =  [
+        {
+            "id": "82c9f224-7d1d-41de-8b14-9c15713ff7ee",
+            "name": "AuditCat-1789001190029",
+            "code": null,
+            "description": null,
+            "defaultTaxPolicy": null,
+            "status": "ACTIVE",
+            "createdDate": "2026-09-10T00:46:30.033Z",
+            "updatedDate": "2026-09-10T00:46:30.033Z",
+            "linkedMerchantCount": 1
+        },
+        {
+            "id": "06c6abdd-d66c-4713-a454-09759db4c2f8",
+            "name": "AuditCat-1789001212395",
+            "code": null,
+            "description": null,
+            "defaultTaxPolicy": null,
+            "status": "ACTIVE",
+            "createdDate": "2026-09-10T00:46:52.399Z",
+            "updatedDate": "2026-09-10T00:46:52.399Z",
+            "linkedMerchantCount": 1
+        },
+        {
+            "id": "3aefdeb8-60f1-4dc9-a635-cc54e218dfa9",
+            "name": "food",
+            "code": "FFF",
+            "description": "dewscccc",
+            "defaultTaxPolicy": "VAT 15% + SC 10%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-10T05:14:35.146Z",
+            "updatedDate": "2026-09-10T05:14:35.146Z",
+            "linkedMerchantCount": 0
+        },
+        {
+            "id": "98a4a928-12ba-475f-ab8c-634f119010ec",
+            "name": "Retail",
+            "code": "RTL",
+            "description": "Retail shops and FMCG outlets",
+            "defaultTaxPolicy": "VAT 15% (Standard Output)",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-08T18:19:44.231Z",
+            "updatedDate": "2026-09-08T18:21:50.070Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "5ec1b7cf-7f88-4eec-8e3e-0bee8c3d95f5",
+            "name": "Retail-1788933866104",
+            "code": "C3866104",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T06:04:26.605Z",
+            "updatedDate": "2026-09-09T06:04:28.815Z",
+            "linkedMerchantCount": 3
+        },
+        {
+            "id": "89d9df4b-5c7e-4966-8b8c-000668ddf3d9",
+            "name": "Retail-1788933891240",
+            "code": "C3891240",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T06:04:51.791Z",
+            "updatedDate": "2026-09-09T06:04:54.530Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "d45e1568-e088-48b1-869f-b7438cc8fd70",
+            "name": "Retail-1788941988422",
+            "code": null,
+            "description": null,
+            "defaultTaxPolicy": null,
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T08:19:48.873Z",
+            "updatedDate": "2026-09-09T08:19:48.873Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "83012cb1-9184-44ac-9589-3c9cd75e2714",
+            "name": "Retail-1788942073578",
+            "code": null,
+            "description": null,
+            "defaultTaxPolicy": null,
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T08:21:14.392Z",
+            "updatedDate": "2026-09-09T08:21:14.392Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "8af4a636-cefc-4b6c-a49d-bdf371e26a5f",
+            "name": "Retail-1788942125898",
+            "code": "C2125898",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T08:22:07.102Z",
+            "updatedDate": "2026-09-09T08:22:10.867Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "8687db77-d69a-40a3-8e5e-2c4194e791b5",
+            "name": "Retail-1788942194048",
+            "code": "C2194048",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T08:23:14.920Z",
+            "updatedDate": "2026-09-09T08:23:17.766Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "d8efc6c6-3c52-4372-904c-016c7df16b85",
+            "name": "Retail-1788943234420",
+            "code": "C3234420",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T08:40:35.263Z",
+            "updatedDate": "2026-09-09T08:40:37.638Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "ad640afc-0db1-4a31-928e-b4ea33fa2663",
+            "name": "Retail-1788947197225",
+            "code": "C7197225",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T09:46:37.922Z",
+            "updatedDate": "2026-09-09T09:46:41.646Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "7cd0d830-35a3-4b6d-8fe4-e4f0c69d78be",
+            "name": "Retail-1788947473210",
+            "code": "C7473210",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T09:51:14.266Z",
+            "updatedDate": "2026-09-09T09:51:17.753Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "9a42a567-2223-409c-9120-20c6eda9fb7f",
+            "name": "Retail-1788971983107",
+            "code": "C1983107",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T16:39:43.372Z",
+            "updatedDate": "2026-09-09T16:39:44.496Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "100f9572-9c76-4d20-a649-479660e0cde4",
+            "name": "Retail-1788973269188",
+            "code": "C3269188",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T17:01:09.462Z",
+            "updatedDate": "2026-09-09T17:01:10.251Z",
+            "linkedMerchantCount": 1
+        },
+        {
+            "id": "847cdc0b-c646-4cfd-a9e6-ec0e72d9ce56",
+            "name": "Retail-1788973295599",
+            "code": "C3295599",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T17:01:35.885Z",
+            "updatedDate": "2026-09-09T17:01:36.625Z",
+            "linkedMerchantCount": 1
+        },
+        {
+            "id": "90592859-263e-4b98-a620-201eae7521cd",
+            "name": "Retail-1788973328574",
+            "code": "C3328574",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T17:02:08.845Z",
+            "updatedDate": "2026-09-09T17:02:09.590Z",
+            "linkedMerchantCount": 1
+        },
+        {
+            "id": "83c7f378-0184-4ae5-9a95-ece856aec6c0",
+            "name": "Retail-1788973370878",
+            "code": "C3370878",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T17:02:51.257Z",
+            "updatedDate": "2026-09-09T17:02:52.570Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "e29e9eb2-60d3-454c-b48f-8c06f4af9083",
+            "name": "Retail-1788973827600",
+            "code": "C3827600",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-09T17:10:28.261Z",
+            "updatedDate": "2026-09-09T17:10:31.217Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "92b9f454-3b6d-4bcc-8a32-22e481c3bf07",
+            "name": "Retail-1789001185989",
+            "code": "C1185989",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-10T00:46:26.370Z",
+            "updatedDate": "2026-09-10T00:46:27.873Z",
+            "linkedMerchantCount": 4
+        },
+        {
+            "id": "a53dc327-94c1-426e-bb6f-895b4cf6821f",
+            "name": "Retail-1789001208707",
+            "code": "C1208707",
+            "description": "Retail shops",
+            "defaultTaxPolicy": "VAT 15%",
+            "status": "ACTIVE",
+            "createdDate": "2026-09-10T00:46:49.100Z",
+            "updatedDate": "2026-09-10T00:46:50.567Z",
+            "linkedMerchantCount": 5
+        }
+    ];
 
 export function AddMerchantModal({
   isOpen,
@@ -48,7 +273,8 @@ export function AddMerchantModal({
 
   // Empty initial states to reveal field placeholders
   const [name, setName] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState(CATEGORIES[0].id);
+  console.log("category",category)
   const [tinNumber, setTinNumber] = useState("");
   const [managerName, setManagerName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -62,7 +288,7 @@ export function AddMerchantModal({
 
   const resetForm = () => {
     setName("");
-    setCategory(CATEGORIES[0]);
+    setCategory(CATEGORIES[0].id);
     setTinNumber("");
     setManagerName("");
     setContactPhone("");
@@ -146,7 +372,7 @@ export function AddMerchantModal({
         dispatch(
           showResponseModal({
             status: "error",
-            title: "Onboarding Failed",
+            title: "",
             message: "Unable to create merchant account. Please try again.",
             buttonText: "Try Again",
           })
@@ -236,8 +462,8 @@ export function AddMerchantModal({
               disabled={isSubmitting}
             >
               {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
                 </option>
               ))}
             </CustomInput>

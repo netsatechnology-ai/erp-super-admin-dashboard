@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { 
   Building2, 
   Plus, 
@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Merchant, MerchantStatus } from "./types";
 import { AddMerchantModal } from "./_components/AddMerchantModal";
 import { MerchantDetailModal } from "./_components/MerchantDetailModal";
+import { MerchantService } from "@/services/MerchantService";
 
 const INITIAL_MERCHANTS: Merchant[] = [
   {
@@ -87,7 +88,14 @@ export default function MerchantsPage() {
   const approvedCount = merchants.filter((m) => m.status === "APPROVED").length;
   const completeCount = merchants.filter((m) => m.status === "COMPLETE").length;
   const incompleteCount = merchants.filter((m) => m.status === "INCOMPLETE").length;
-
+const fetchMerchants=()=>{
+  MerchantService.fetchMerchants("").then((response)=>{
+    console.log(response)
+  })
+}
+useEffect(()=>{
+  fetchMerchants()
+},[])
   const handleAddMerchant = (newMerchant: Merchant) => {
     setMerchants((prev) => [newMerchant, ...prev]);
   };
