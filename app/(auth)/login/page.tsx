@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Lock, Phone, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ import { AuthService } from "@/services/AuthService";
 import { useAppDispatch } from "@/lib/redux/store";
 import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
 
+const REMEMBER_ME_PHONE_KEY = "remembered_phone";
+
 export default function LoginPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -30,11 +32,33 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+
   // Modal State Control
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [recoveryPhone, setRecoveryPhone] = useState("");
+
+  // 1. Auto-fill phone from localStorage on component mount
+  useEffect(() => {
+    const savedPhone = localStorage.getItem(REMEMBER_ME_PHONE_KEY);
+    if (savedPhone) {
+      setPhone(savedPhone);
+      setRememberMe(true);
+    }
+  }, []);
+
+  // 2. Capture native browser autofill values when Chrome/Safari inject values directly
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (passwordInputRef.current && passwordInputRef.current.value) {
+        setPassword(passwordInputRef.current.value);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +78,12 @@ export default function LoginPage() {
         const token = response?.accessToken;
 
         if (token) {
-          // 1. Save token to sessionStorage for apiClient interceptor
+          if (rememberMe) {
+            localStorage.setItem(REMEMBER_ME_PHONE_KEY, phone);
+          } else {
+            localStorage.removeItem(REMEMBER_ME_PHONE_KEY);
+          }
+
           sessionStorage.setItem("token", token);
           router.push("/dashboard");
           router.refresh();
@@ -104,23 +133,19 @@ export default function LoginPage() {
       });
   };
 
-  // Step 1: Phone Submitted -> Open OTP Modal
   const handlePhoneSubmitted = (fullPhone: string) => {
     setRecoveryPhone(fullPhone);
     setIsForgotModalOpen(false);
     setIsOtpModalOpen(true);
   };
 
-  // Step 2: OTP Verified -> Open Reset Password Modal
   const handleOtpVerified = () => {
     setIsOtpModalOpen(false);
     setIsResetModalOpen(true);
   };
 
-  // Step 3: Password Updated -> Close Reset Modal & Prompt Sign In
   const handlePasswordResetSuccess = () => {
     setIsResetModalOpen(false);
-    console.log("Password successfully reset for", recoveryPhone);
   };
 
   return (
@@ -139,11 +164,14 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Phone Input with Separate +251 Box */}
+          {/* Explicit method="post" signals password managers to handle autofill */}
+          <form onSubmit={handleLogin} method="post" className="space-y-4">
             <CustomInput
               label="Phone Number"
               type="tel"
+              name="username"
+              autoComplete="username"
+              id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
               placeholder="911234567"
@@ -156,11 +184,14 @@ export default function LoginPage() {
               }
             />
 
-            {/* Password Input with Eye Toggle */}
             <div className="relative">
               <CustomInput
+                ref={passwordInputRef}
                 label="Password"
                 icon={Lock}
+                name="password"
+                autoComplete="current-password"
+                id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -181,11 +212,11 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* Remember Me & Forgot Password Options */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
+                  name="rememberMe"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
@@ -218,14 +249,12 @@ export default function LoginPage() {
         </CardContent>
       </Card>
 
-      {/* 1. Phone Input Modal */}
       <ForgotPasswordModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
         onSubmitPhone={handlePhoneSubmitted}
       />
 
-      {/* 2. 6-Digit OTP Verification Modal */}
       <OtpVerificationModal
         isOpen={isOtpModalOpen}
         phoneNumber={recoveryPhone}
@@ -233,7 +262,6 @@ export default function LoginPage() {
         onVerified={handleOtpVerified}
       />
 
-      {/* 3. Set New Password Modal */}
       <ResetPasswordModal
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}

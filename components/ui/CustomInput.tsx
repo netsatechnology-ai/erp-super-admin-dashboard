@@ -5,8 +5,7 @@ import { LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-export interface CustomInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> {
+export interface CustomInputBaseProps {
   label?: string;
   requiredStar?: boolean;
   topRightBadge?: React.ReactNode;
@@ -16,12 +15,16 @@ export interface CustomInputProps
   inlinePrefix?: React.ReactNode;
   containerClassName?: string;
   error?: string;
-  as?: "input" | "select"; // Added polymorphic support
-  children?: React.ReactNode; // For <option> tags when as="select"
 }
 
+export type CustomInputProps = CustomInputBaseProps &
+  (
+    | ({ as?: "input" } & React.InputHTMLAttributes<HTMLInputElement>)
+    | ({ as: "select"; children?: React.ReactNode } & React.SelectHTMLAttributes<HTMLSelectElement>)
+  );
+
 export const CustomInput = React.forwardRef<
-  HTMLInputElement & HTMLSelectElement,
+  HTMLInputElement | HTMLSelectElement,
   CustomInputProps
 >(
   (
@@ -38,7 +41,6 @@ export const CustomInput = React.forwardRef<
       containerClassName,
       error,
       as = "input",
-      children,
       ...props
     },
     ref
@@ -94,7 +96,7 @@ export const CustomInput = React.forwardRef<
             {as === "select" ? (
               <select
                 id={inputId}
-                ref={ref}
+                ref={ref as React.Ref<HTMLSelectElement>}
                 className={cn(
                   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer font-semibold text-foreground",
                   hasLeftIcon && "pl-9",
@@ -102,19 +104,17 @@ export const CustomInput = React.forwardRef<
                   className
                 )}
                 {...(props as React.SelectHTMLAttributes<HTMLSelectElement>)}
-              >
-                {children}
-              </select>
+              />
             ) : (
               <Input
                 id={inputId}
-                ref={ref}
+                ref={ref as React.Ref<HTMLInputElement>}
                 className={cn(
                   hasLeftIcon && "pl-9",
                   rightIcon && "pr-9",
                   className
                 )}
-                {...props}
+                {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
               />
             )}
 

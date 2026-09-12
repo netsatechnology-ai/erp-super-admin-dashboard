@@ -1,21 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ShieldPlus, Check, X } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { Role } from "./RoleDetailModal";
-import { UserService } from "@/services/UserService";
 import { hideLoader, showLoader } from "@/lib/redux/slices/loadingSlice";
 import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
-
-
+import { RoleService } from "@/services/RoleService";
 
 export interface Permission {
   key: string;
   label: string;
-  description: string;
+  description?: string;
+  domain?: string;
 }
 
 export interface PermissionDomain {
@@ -23,281 +22,61 @@ export interface PermissionDomain {
   permissions: Permission[];
 }
 
-export const PERMISSION_DOMAINS: PermissionDomain[] = [
-  {
-    domain: "Dashboard",
-    permissions: [
-      {
-        key: "dashboard:system:view",
-        label: "View System Dashboard",
-        description: "View global platform metrics and system-wide dashboards",
-      },
-      {
-        key: "dashboard:merchant:view",
-        label: "View Merchant Dashboard",
-        description: "View merchant-specific performance metrics and revenue dashboards",
-      },
-    ],
-  },
-  {
-    domain: "Transactions",
-    permissions: [
-      {
-        key: "transaction:read",
-        label: "Read Transactions",
-        description: "View list and details of processed financial transactions",
-      },
-      {
-        key: "transaction:refund",
-        label: "Refund Transaction",
-        description: "Initiate payment refunds for customer transactions",
-      },
-      {
-        key: "transaction:export",
-        label: "Export Transactions",
-        description: "Export transaction history logs to CSV/Excel",
-      },
-    ],
-  },
-  {
-    domain: "Invoicing",
-    permissions: [
-      {
-        key: "invoice:create",
-        label: "Create Invoice",
-        description: "Generate new sales invoices for customers",
-      },
-      {
-        key: "invoice:read",
-        label: "Read Invoice",
-        description: "View sales invoice details, line items, and payment status",
-      },
-      {
-        key: "invoice:update",
-        label: "Update Invoice",
-        description: "Edit draft or unpaid sales invoices",
-      },
-      {
-        key: "invoice:cancel",
-        label: "Cancel Invoice",
-        description: "Void or cancel generated sales invoices",
-      },
-      {
-        key: "invoice:print",
-        label: "Print Invoice",
-        description: "Download or print PDF sales invoices",
-      },
-    ],
-  },
-  {
-    domain: "Inventory",
-    permissions: [
-      {
-        key: "inventory:item:create",
-        label: "Create Item",
-        description: "Add new products and variants to the inventory catalog",
-      },
-      {
-        key: "inventory:item:read",
-        label: "Read Item",
-        description: "View catalog products, pricing, and item specifications",
-      },
-      {
-        key: "inventory:item:update",
-        label: "Update Item",
-        description: "Modify product details, pricing, and category assignments",
-      },
-      {
-        key: "inventory:item:delete",
-        label: "Delete Item",
-        description: "Remove products from the merchant catalog",
-      },
-    ],
-  },
-  {
-    domain: "Warehouse & Stock",
-    permissions: [
-      {
-        key: "stock:level:read",
-        label: "Read Stock Levels",
-        description: "View current stock levels, low-stock alerts, and warehouse counts",
-      },
-      {
-        key: "stock:adjust",
-        label: "Adjust Stock",
-        description: "Perform manual stock count adjustments and reconciliation",
-      },
-      {
-        key: "stock:transfer",
-        label: "Transfer Stock",
-        description: "Transfer stock between different store locations or warehouses",
-      },
-      {
-        key: "stock:supplier:manage",
-        label: "Manage Suppliers",
-        description: "Create and manage stock supplier profiles and purchase orders",
-      },
-    ],
-  },
-  {
-    domain: "System Admin",
-    permissions: [
-      {
-        key: "system:superadmin",
-        label: "Super Admin Access",
-        description: "Full platform access to manage system configuration and all tenants",
-      },
-      {
-        key: "system:audit_logs:read",
-        label: "Read Audit Logs",
-        description: "View system-wide security and access audit logs",
-      },
-    ],
-  },
-  {
-    domain: "User Management",
-    permissions: [
-      {
-        key: "user:create",
-        label: "Create User",
-        description: "Create new user accounts in the platform",
-      },
-      {
-        key: "user:read",
-        label: "Read Users",
-        description: "View basic details and status of user profiles",
-      },
-      {
-        key: "user:update",
-        label: "Update User",
-        description: "Update basic user profile details",
-      },
-      {
-        key: "user:delete",
-        label: "Delete User",
-        description: "Deactivate or delete user accounts",
-      },
-      {
-        key: "user:status:change",
-        label: "Change User Status",
-        description: "Change user account operational status (e.g., Active, Suspended)",
-      },
-    ],
-  },
-  {
-    domain: "Merchant Management",
-    permissions: [
-      {
-        key: "merchant:create",
-        label: "Create Merchant",
-        description: "Register new merchant entities",
-      },
-      {
-        key: "merchant:read",
-        label: "Read Merchant",
-        description: "View merchant profile, business license, and contact details",
-      },
-      {
-        key: "merchant:update",
-        label: "Update Merchant",
-        description: "Update merchant profile and management contact information",
-      },
-      {
-        key: "merchant:delete",
-        label: "Delete Merchant",
-        description: "Archive or soft-delete merchant accounts",
-      },
-      {
-        key: "merchant:status:change",
-        label: "Change Merchant Status",
-        description: "Approve, suspend, or change merchant operational status",
-      },
-    ],
-  },
-  {
-    domain: "Category Management",
-    permissions: [
-      {
-        key: "merchant_category:create",
-        label: "Create Category",
-        description: "Add new merchant categories",
-      },
-      {
-        key: "merchant_category:read",
-        label: "Read Category",
-        description: "View merchant categories and status",
-      },
-      {
-        key: "merchant_category:update",
-        label: "Update Category",
-        description: "Update existing merchant category names or details",
-      },
-      {
-        key: "merchant_category:delete",
-        label: "Delete Category",
-        description: "Delete or deactivate unused merchant categories",
-      },
-    ],
-  },
-  {
-    domain: "Access Control",
-    permissions: [
-      {
-        key: "role:create",
-        label: "Create Role",
-        description: "Create custom roles within a merchant tenant or globally",
-      },
-      {
-        key: "role:read",
-        label: "Read Roles",
-        description: "View roles and assigned system permissions",
-      },
-      {
-        key: "role:update",
-        label: "Update Role",
-        description: "Modify existing role names and permission assignments",
-      },
-      {
-        key: "role:delete",
-        label: "Delete Role",
-        description: "Delete unassigned roles",
-      },
-    ],
-  },
-  {
-    domain: "Tenant Roles",
-    permissions: [
-      {
-        key: "user_role:assign",
-        label: "Assign User Role",
-        description: "Assign roles to users within a merchant context",
-      },
-      {
-        key: "user_role:revoke",
-        label: "Revoke User Role",
-        description: "Revoke user roles within a merchant context",
-      },
-      {
-        key: "user_role:read",
-        label: "Read User Roles",
-        description: "View current user-merchant role assignments",
-      },
-    ],
-  },
-];
-
 interface AddRoleModalProps {
   isOpen: boolean;
+  permissions?: any[];
   onClose: () => void;
   onAddRole: (newRole: Role) => void;
 }
 
-export function AddRoleModal({ isOpen, onClose, onAddRole }: AddRoleModalProps) {
+export function AddRoleModal({
+  isOpen,
+  permissions = [],
+  onClose,
+  onAddRole,
+}: AddRoleModalProps) {
   const dispatch = useDispatch();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Group raw permissions prop by domain using useMemo
+  const permissionDomains = useMemo(() => {
+    if (!Array.isArray(permissions) || permissions.length === 0) return [];
+
+    const domainMap: Record<string, Permission[]> = {};
+
+    permissions.forEach((perm) => {
+      const key = perm.key || perm.name || perm.id;
+      const label = perm.label || perm.name || key;
+      const description = perm.description || "";
+
+      const domainName =
+        perm.domain ||
+        (key.includes(":") ? key.split(":")[0] : "General");
+
+      const formattedDomain = domainName
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (char: string) => char.toUpperCase());
+
+      if (!domainMap[formattedDomain]) {
+        domainMap[formattedDomain] = [];
+      }
+
+      domainMap[formattedDomain].push({
+        key,
+        label,
+        description,
+        domain: formattedDomain,
+      });
+    });
+
+    return Object.entries(domainMap).map(([domain, items]) => ({
+      domain,
+      permissions: items,
+    }));
+  }, [permissions]);
 
   if (!isOpen) return null;
 
@@ -325,10 +104,10 @@ export function AddRoleModal({ isOpen, onClose, onAddRole }: AddRoleModalProps) 
       const payload = {
         name,
         description,
-        permissions: selectedPermissions,
+        permissionKeys: selectedPermissions,
       };
 
-      const response = await UserService.addRole(payload);
+      const response = await RoleService.addRole(payload);
 
       dispatch(hideLoader());
 
@@ -365,15 +144,14 @@ export function AddRoleModal({ isOpen, onClose, onAddRole }: AddRoleModalProps) 
         );
       }
     } catch (error: any) {
-      console.log("error",error)
       dispatch(hideLoader());
       dispatch(
         showResponseModal({
           status: "error",
           title: "Error",
           message:
-            error?.response?.data?.message || 
-            "An error occurred while connecting to UserService.",
+            error?.response?.data?.message ||
+            "An error occurred while creating the role.",
           buttonText: "Close",
         })
       );
@@ -404,7 +182,7 @@ export function AddRoleModal({ isOpen, onClose, onAddRole }: AddRoleModalProps) 
             type="button"
             onClick={handleResetAndClose}
             disabled={isSubmitting}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50 cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -440,46 +218,52 @@ export function AddRoleModal({ isOpen, onClose, onAddRole }: AddRoleModalProps) 
             <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Select Initial Permissions ({selectedPermissions.length})
             </label>
-            <div className="max-h-64 overflow-y-auto rounded-xl border border-border bg-background/50 p-4 space-y-4">
-              {PERMISSION_DOMAINS.map((domainGroup) => (
-                <div key={domainGroup.domain} className="space-y-2">
-                  <h4 className="text-xs font-bold text-foreground border-b border-border/50 pb-1">
-                    {domainGroup.domain}
-                  </h4>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {domainGroup.permissions.map((perm) => {
-                      const isChecked = selectedPermissions.includes(perm.key);
-                      return (
-                        <button
-                          type="button"
-                          key={perm.key}
-                          title={perm.description}
-                          disabled={isSubmitting}
-                          onClick={() => togglePermission(perm.key)}
-                          className={`group relative flex items-center justify-between rounded-lg border p-2 text-xs font-medium transition-all text-left disabled:opacity-50 ${
-                            isChecked
-                              ? "border-primary/40 bg-primary/10 text-primary"
-                              : "border-border bg-card text-muted-foreground hover:bg-accent"
-                          }`}
-                        >
-                          <div className="flex flex-col pr-2">
-                            <span>{perm.label}</span>
-                          </div>
-                          <div
-                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+            <div className="max-h-64 overflow-y-auto rounded-xl border border-border bg-background/50 p-4 space-y-4 min-h-[120px]">
+              {permissionDomains.length === 0 ? (
+                <div className="flex h-32 items-center justify-center text-xs text-muted-foreground font-medium">
+                  No permissions found.
+                </div>
+              ) : (
+                permissionDomains.map((domainGroup) => (
+                  <div key={domainGroup.domain} className="space-y-2">
+                    <h4 className="text-xs font-bold text-foreground border-b border-border/50 pb-1">
+                      {domainGroup.domain}
+                    </h4>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {domainGroup.permissions.map((perm) => {
+                        const isChecked = selectedPermissions.includes(perm.key);
+                        return (
+                          <button
+                            type="button"
+                            key={perm.key}
+                            title={perm.description}
+                            disabled={isSubmitting}
+                            onClick={() => togglePermission(perm.key)}
+                            className={`group relative flex items-center justify-between rounded-lg border p-2 text-xs font-medium transition-all text-left disabled:opacity-50 cursor-pointer ${
                               isChecked
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-border bg-background"
+                                ? "border-primary/40 bg-primary/10 text-primary"
+                                : "border-border bg-card text-muted-foreground hover:bg-accent"
                             }`}
                           >
-                            {isChecked && <Check className="h-3 w-3 stroke-3" />}
-                          </div>
-                        </button>
-                      );
-                    })}
+                            <div className="flex flex-col pr-2">
+                              <span>{perm.label}</span>
+                            </div>
+                            <div
+                              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                isChecked
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-background"
+                              }`}
+                            >
+                              {isChecked && <Check className="h-3 w-3 stroke-3" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -490,10 +274,11 @@ export function AddRoleModal({ isOpen, onClose, onAddRole }: AddRoleModalProps) 
               variant="outline"
               onClick={handleResetAndClose}
               disabled={isSubmitting}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="cursor-pointer">
               {isSubmitting ? "Creating..." : "Create Role"}
             </Button>
           </div>

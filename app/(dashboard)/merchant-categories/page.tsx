@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { CategoryItem } from "./types";
 import { CategoryHeader } from "./_components/CategoryHeader";
 import { CategoryKpiCards } from "./_components/CategoryKpiCards";
@@ -12,17 +12,35 @@ import { MerchantService } from "@/services/MerchantService";
 import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
 import { useAppDispatch } from "@/lib/redux/store";
 
+
+
 export default function MerchantCategoriesPage() {
   const dispatch = useAppDispatch();
   const [categories, setCategories] = useState<CategoryItem[] | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchCategories = async () => {
+ 
+  const [filter, setFilter] = useState({
+    search: "",
+    currentPage: 1,
+    pageSize: 10,
+    status: "",
+    totalPages:0,
+    totalItems:0
+  });
+
+  const fetchCategories = useCallback(async () => {
     try {
-      const response = await MerchantService.fetchCatagories("");
-      if (response.categories) {
-        setCategories(response.categories);
+      const response = await MerchantService.fetchCatagories(filter);
+      if (response.status) {
+        setCategories(response.data);
+        if(filter.currentPage==1){
+          setFilter({...filter, 
+            totalPages:response.pagination?.totalPages || 0,
+            totalItems:response.pagination?.totalItems || 0
+          })
+        }
       } else {
         dispatch(
           showResponseModal({
@@ -41,11 +59,20 @@ export default function MerchantCategoriesPage() {
         })
       );
     }
-  };
+  }, [filter, dispatch]);
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [filter.currentPage]);
+
+  const handleFilterChange = (newFilters:any) => {
+    setFilter((prev) => ({
+      ...prev,
+      ...newFilters,
+      // Reset to page 1 whenever search query or status changes
+      ...(newFilters.currentPage === undefined && { currentPage: 1 }),
+    }));
+  };
 
   const handleAddClick = () => {
     setSelectedCategory(null);
@@ -57,25 +84,27 @@ export default function MerchantCategoriesPage() {
     setIsModalOpen(true);
   };
 
-  const handleSaveCategory = (categoryToSave: CategoryItem) => {
-    setCategories((prev) => {
-      if (!prev) return [categoryToSave];
-      const exists = prev.some((c) => c.id === categoryToSave.id);
-      if (exists) {
-        return prev.map((c) => (c.id === categoryToSave.id ? categoryToSave : c));
-      }
-      return [categoryToSave, ...prev];
-    });
+  const handleSaveCategory = () => {
+    // Re-fetch from backend to get fresh paginated/filtered dataset
+    fetchCategories();
     setSelectedCategory(null);
   };
 
-  const handleToggleStatus = (categoryId: string, nextStatus: "ACTIVE" | "INACTIVE") => {
+  const handleToggleStatus = (
+    categoryId: string,
+    nextStatus: "ACTIVE" | "INACTIVE"
+  ) => {
     setCategories((prev) => {
       if (!prev) return null;
       return prev.map((cat) =>
         cat.id === categoryId ? { ...cat, status: nextStatus } : cat
       );
     });
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    // Re-fetch from backend to keep exact pagination counts intact
+    fetchCategories();
   };
 
   const handleCloseModal = () => {
@@ -88,13 +117,17 @@ export default function MerchantCategoriesPage() {
       <CategoryHeader onAddClick={handleAddClick} />
       <CategoryKpiCards />
 
-      <div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8">
           <CategoryTable
             categories={categories}
             selectedCategoryId={selectedCategory?.id || null}
             onSelectCategory={handleSelectCategory}
             onToggleStatus={handleToggleStatus}
+            onDeleteCategory={handleDeleteCategory}
+            filter={filter}
+            setFilter={setFilter}
+            onFilterChange={handleFilterChange}
           />
         </div>
 

@@ -33,7 +33,10 @@ export function AddCategoryModal({
   const [taxPolicy, setTaxPolicy] = useState("VAT 15% (Standard Output)");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-console.log("oooooooo",selectedCategory)
+
+  // Check if modal is in edit mode
+  const isEditing = Boolean(selectedCategory);
+
   useEffect(() => {
     if (selectedCategory) {
       setCatName(selectedCategory.name);
@@ -46,7 +49,6 @@ console.log("oooooooo",selectedCategory)
           ? "Standard Exempt"
           : "VAT 15% (Standard Output)"
       );
-
     } else {
       resetFormFields();
     }
@@ -57,7 +59,6 @@ console.log("oooooooo",selectedCategory)
     setCatCode("");
     setCatDescription("");
     setTaxPolicy("VAT 15% (Standard Output)");
-  
   };
 
   const handleResetForm = () => {
@@ -117,7 +118,8 @@ console.log("oooooooo",selectedCategory)
       if (response) {
         const savedCategory: CategoryItem = response.category || {
           id: selectedCategory?.id || response.id || `cat-${Date.now()}`,
-          linkedMerchantCount: selectedCategory?.linkedMerchantCount || 0,...selectedCategory,
+          linkedMerchantCount: selectedCategory?.linkedMerchantCount || 0,
+          ...selectedCategory,
           ...payload,
         };
 
@@ -211,7 +213,7 @@ console.log("oooooooo",selectedCategory)
               setCatName(e.target.value)
             }
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || isEditing}
           />
 
           <CustomInput
@@ -230,7 +232,7 @@ console.log("oooooooo",selectedCategory)
             }
             maxLength={3}
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || isEditing}
           />
 
           <div className="space-y-1.5">
@@ -267,33 +269,6 @@ console.log("oooooooo",selectedCategory)
             </option>
             <option value="Standard Exempt">Standard Exempt</option>
           </CustomInput>
-
-          {/* <div className="flex items-center justify-between rounded-xl bg-indigo-50/40 dark:bg-slate-900/40 p-3 border border-border/60">
-            <div>
-              <p className="text-xs font-bold text-foreground">
-                Category Status
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                Enabled for new merchants
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => setIsCategoryEnabled(!isCategoryEnabled)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-hidden disabled:opacity-50 ${
-                isCategoryEnabled
-                  ? "bg-indigo-600"
-                  : "bg-slate-300 dark:bg-slate-700"
-              }`}
-            >
-              <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-xs transition duration-200 ease-in-out ${
-                  isCategoryEnabled ? "translate-x-5" : "translate-x-0.5"
-                } my-0.5`}
-              />
-            </button>
-          </div> */}
 
           <div className="flex items-center gap-2 pt-2">
             <Button

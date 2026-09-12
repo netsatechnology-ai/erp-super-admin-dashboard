@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   Store,
@@ -23,246 +23,13 @@ import { MerchantService } from "@/services/MerchantService";
 import { useAppDispatch } from "@/lib/redux/store";
 import { showLoader, hideLoader } from "@/lib/redux/slices/loadingSlice";
 import { showResponseModal } from "@/lib/redux/slices/responseModalSlice";
+import { CategoryItem } from "../../merchant-categories/types";
 
 interface AddMerchantModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddMerchant: (merchant: Merchant) => void;
 }
-
-const CATEGORIES =  [
-        {
-            "id": "82c9f224-7d1d-41de-8b14-9c15713ff7ee",
-            "name": "AuditCat-1789001190029",
-            "code": null,
-            "description": null,
-            "defaultTaxPolicy": null,
-            "status": "ACTIVE",
-            "createdDate": "2026-09-10T00:46:30.033Z",
-            "updatedDate": "2026-09-10T00:46:30.033Z",
-            "linkedMerchantCount": 1
-        },
-        {
-            "id": "06c6abdd-d66c-4713-a454-09759db4c2f8",
-            "name": "AuditCat-1789001212395",
-            "code": null,
-            "description": null,
-            "defaultTaxPolicy": null,
-            "status": "ACTIVE",
-            "createdDate": "2026-09-10T00:46:52.399Z",
-            "updatedDate": "2026-09-10T00:46:52.399Z",
-            "linkedMerchantCount": 1
-        },
-        {
-            "id": "3aefdeb8-60f1-4dc9-a635-cc54e218dfa9",
-            "name": "food",
-            "code": "FFF",
-            "description": "dewscccc",
-            "defaultTaxPolicy": "VAT 15% + SC 10%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-10T05:14:35.146Z",
-            "updatedDate": "2026-09-10T05:14:35.146Z",
-            "linkedMerchantCount": 0
-        },
-        {
-            "id": "98a4a928-12ba-475f-ab8c-634f119010ec",
-            "name": "Retail",
-            "code": "RTL",
-            "description": "Retail shops and FMCG outlets",
-            "defaultTaxPolicy": "VAT 15% (Standard Output)",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-08T18:19:44.231Z",
-            "updatedDate": "2026-09-08T18:21:50.070Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "5ec1b7cf-7f88-4eec-8e3e-0bee8c3d95f5",
-            "name": "Retail-1788933866104",
-            "code": "C3866104",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T06:04:26.605Z",
-            "updatedDate": "2026-09-09T06:04:28.815Z",
-            "linkedMerchantCount": 3
-        },
-        {
-            "id": "89d9df4b-5c7e-4966-8b8c-000668ddf3d9",
-            "name": "Retail-1788933891240",
-            "code": "C3891240",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T06:04:51.791Z",
-            "updatedDate": "2026-09-09T06:04:54.530Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "d45e1568-e088-48b1-869f-b7438cc8fd70",
-            "name": "Retail-1788941988422",
-            "code": null,
-            "description": null,
-            "defaultTaxPolicy": null,
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T08:19:48.873Z",
-            "updatedDate": "2026-09-09T08:19:48.873Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "83012cb1-9184-44ac-9589-3c9cd75e2714",
-            "name": "Retail-1788942073578",
-            "code": null,
-            "description": null,
-            "defaultTaxPolicy": null,
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T08:21:14.392Z",
-            "updatedDate": "2026-09-09T08:21:14.392Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "8af4a636-cefc-4b6c-a49d-bdf371e26a5f",
-            "name": "Retail-1788942125898",
-            "code": "C2125898",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T08:22:07.102Z",
-            "updatedDate": "2026-09-09T08:22:10.867Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "8687db77-d69a-40a3-8e5e-2c4194e791b5",
-            "name": "Retail-1788942194048",
-            "code": "C2194048",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T08:23:14.920Z",
-            "updatedDate": "2026-09-09T08:23:17.766Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "d8efc6c6-3c52-4372-904c-016c7df16b85",
-            "name": "Retail-1788943234420",
-            "code": "C3234420",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T08:40:35.263Z",
-            "updatedDate": "2026-09-09T08:40:37.638Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "ad640afc-0db1-4a31-928e-b4ea33fa2663",
-            "name": "Retail-1788947197225",
-            "code": "C7197225",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T09:46:37.922Z",
-            "updatedDate": "2026-09-09T09:46:41.646Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "7cd0d830-35a3-4b6d-8fe4-e4f0c69d78be",
-            "name": "Retail-1788947473210",
-            "code": "C7473210",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T09:51:14.266Z",
-            "updatedDate": "2026-09-09T09:51:17.753Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "9a42a567-2223-409c-9120-20c6eda9fb7f",
-            "name": "Retail-1788971983107",
-            "code": "C1983107",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T16:39:43.372Z",
-            "updatedDate": "2026-09-09T16:39:44.496Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "100f9572-9c76-4d20-a649-479660e0cde4",
-            "name": "Retail-1788973269188",
-            "code": "C3269188",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T17:01:09.462Z",
-            "updatedDate": "2026-09-09T17:01:10.251Z",
-            "linkedMerchantCount": 1
-        },
-        {
-            "id": "847cdc0b-c646-4cfd-a9e6-ec0e72d9ce56",
-            "name": "Retail-1788973295599",
-            "code": "C3295599",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T17:01:35.885Z",
-            "updatedDate": "2026-09-09T17:01:36.625Z",
-            "linkedMerchantCount": 1
-        },
-        {
-            "id": "90592859-263e-4b98-a620-201eae7521cd",
-            "name": "Retail-1788973328574",
-            "code": "C3328574",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T17:02:08.845Z",
-            "updatedDate": "2026-09-09T17:02:09.590Z",
-            "linkedMerchantCount": 1
-        },
-        {
-            "id": "83c7f378-0184-4ae5-9a95-ece856aec6c0",
-            "name": "Retail-1788973370878",
-            "code": "C3370878",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T17:02:51.257Z",
-            "updatedDate": "2026-09-09T17:02:52.570Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "e29e9eb2-60d3-454c-b48f-8c06f4af9083",
-            "name": "Retail-1788973827600",
-            "code": "C3827600",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-09T17:10:28.261Z",
-            "updatedDate": "2026-09-09T17:10:31.217Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "92b9f454-3b6d-4bcc-8a32-22e481c3bf07",
-            "name": "Retail-1789001185989",
-            "code": "C1185989",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-10T00:46:26.370Z",
-            "updatedDate": "2026-09-10T00:46:27.873Z",
-            "linkedMerchantCount": 4
-        },
-        {
-            "id": "a53dc327-94c1-426e-bb6f-895b4cf6821f",
-            "name": "Retail-1789001208707",
-            "code": "C1208707",
-            "description": "Retail shops",
-            "defaultTaxPolicy": "VAT 15%",
-            "status": "ACTIVE",
-            "createdDate": "2026-09-10T00:46:49.100Z",
-            "updatedDate": "2026-09-10T00:46:50.567Z",
-            "linkedMerchantCount": 5
-        }
-    ];
 
 export function AddMerchantModal({
   isOpen,
@@ -271,10 +38,9 @@ export function AddMerchantModal({
 }: AddMerchantModalProps) {
   const dispatch = useAppDispatch();
 
-  // Empty initial states to reveal field placeholders
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [name, setName] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0].id);
-  console.log("category",category)
+  const [categoryId, setCategoryId] = useState<string>("");
   const [tinNumber, setTinNumber] = useState("");
   const [managerName, setManagerName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -284,11 +50,35 @@ export function AddMerchantModal({
   const [managerIdFile, setManagerIdFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen) return null;
+  const fetchCategories = async () => {
+    try {
+      const response = await MerchantService.fetchCatagoriesForDropDown();
+      if (response?.status && Array.isArray(response.data)) {
+        setCategories(response.data);
+        if (response.data.length > 0) {
+          setCategoryId(String(response.data[0].id));
+        }
+      }
+    } catch (error: any) {
+      dispatch(
+        showResponseModal({
+          status: "error",
+          message: error.message || "Failed to get category list",
+          buttonText: "Try Again",
+        })
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen]);
 
   const resetForm = () => {
     setName("");
-    setCategory(CATEGORIES[0].id);
+    setCategoryId(categories.length > 0 ? String(categories[0].id) : "");
     setTinNumber("");
     setManagerName("");
     setContactPhone("");
@@ -324,7 +114,7 @@ export function AddMerchantModal({
     try {
       const formData = new FormData();
       formData.append("name", name);
-      formData.append("categoryId", category);
+      formData.append("categoryId", categoryId);
       formData.append("tin", tinNumber);
       formData.append("managerFullName", managerName);
       formData.append("managerPhoneNumber", contactPhone);
@@ -342,11 +132,13 @@ export function AddMerchantModal({
       dispatch(hideLoader());
 
       if (response) {
-        // Fallback fallback object formatting if backend returns basic payload
+        const selectedCatName =
+          categories.find((c) => String(c.id) === categoryId)?.name || "General";
+
         const createdMerchant: Merchant = response.data || {
           id: response.data?.id || `mch-${Date.now()}`,
           name,
-          category,
+          category: selectedCatName,
           tinNumber,
           managerName,
           contactPhone,
@@ -368,25 +160,15 @@ export function AddMerchantModal({
             buttonText: "Done",
           })
         );
-      } else {
-        dispatch(
-          showResponseModal({
-            status: "error",
-            title: "",
-            message: "Unable to create merchant account. Please try again.",
-            buttonText: "Try Again",
-          })
-        );
       }
     } catch (error: any) {
       dispatch(hideLoader());
 
       const status = error?.response?.status;
-      let errorMessage = "An error occurred while connecting to MerchantService.";
+      let errorMessage = "An error occurred while onboarding merchant.";
 
       if (status === 404) {
-        errorMessage =
-          "The merchant onboarding endpoint was not found on the server. Please verify the API route configuration.";
+        errorMessage = "The merchant onboarding endpoint was not found on the server.";
       } else if (error?.response?.data) {
         const serverData = error.response.data;
         errorMessage =
@@ -410,10 +192,11 @@ export function AddMerchantModal({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-card border border-border shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
-        {/* Modal Header */}
+      <div className="relative w-full max-w-2xl rounded-2xl bg-card border border-border shadow-2xl overflow-auto my-8 animate-in fade-in zoom-in-95 duration-150 max-h-[80vh]">
         <div className="flex items-center justify-between border-b border-border/80 px-6 py-4 bg-muted/20">
           <div className="flex items-center gap-2.5">
             <div className="h-3 w-3 rounded-full bg-indigo-600" />
@@ -440,7 +223,6 @@ export function AddMerchantModal({
 
         {/* Modal Form Content */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Row 1: Merchant Name & Category */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <CustomInput
               label="MERCHANT NAME"
@@ -457,11 +239,13 @@ export function AddMerchantModal({
               label="MERCHANT CATEGORY"
               requiredStar
               as="select"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              disabled={isSubmitting}
+              value={categoryId}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setCategoryId(e.target.value)
+              }
+              disabled={isSubmitting || categories.length === 0}
             >
-              {CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
@@ -469,7 +253,6 @@ export function AddMerchantModal({
             </CustomInput>
           </div>
 
-          {/* Row 2: TIN Number */}
           <CustomInput
             label="TIN NUMBER"
             requiredStar
@@ -495,12 +278,15 @@ export function AddMerchantModal({
             required
           />
 
-          {/* Business License Upload Area */}
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
               BUSINESS LICENSE UPLOAD <span className="text-rose-500">*</span>
             </label>
-            <label className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-slate-900/40 p-5 text-center transition-colors hover:border-indigo-400 ${isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+            <label
+              className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-slate-900/40 p-5 text-center transition-colors hover:border-indigo-400 ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
+            >
               <input
                 type="file"
                 accept=".pdf,.png,.jpg,.jpeg"
@@ -528,7 +314,6 @@ export function AddMerchantModal({
             </label>
           </div>
 
-          {/* Row 3: Manager Name & Contact Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <CustomInput
               label="MANAGER FULL NAME"
@@ -553,7 +338,6 @@ export function AddMerchantModal({
             />
           </div>
 
-          {/* Row 4: Password Field */}
           <CustomInput
             label="ACCOUNT PASSWORD"
             requiredStar
@@ -580,7 +364,6 @@ export function AddMerchantModal({
             required
           />
 
-          {/* Manager ID Upload Banner */}
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
               MANAGER ID UPLOAD <span className="text-rose-500">*</span>
@@ -601,7 +384,11 @@ export function AddMerchantModal({
                   </p>
                 </div>
               </div>
-              <label className={`cursor-pointer ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}>
+              <label
+                className={`cursor-pointer ${
+                  isSubmitting ? "opacity-50 pointer-events-none" : ""
+                }`}
+              >
                 <input
                   type="file"
                   accept=".pdf,.png,.jpg,.jpeg"
@@ -616,7 +403,6 @@ export function AddMerchantModal({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="pt-3 flex items-center justify-end gap-3">
             <Button
               type="button"
@@ -629,7 +415,14 @@ export function AddMerchantModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !name || !tinNumber || !managerName || !contactPhone || !password}
+              disabled={
+                isSubmitting ||
+                !name ||
+                !tinNumber ||
+                !managerName ||
+                !contactPhone ||
+                !password
+              }
               className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-5 rounded-xl shadow-xs"
             >
               {isSubmitting ? (

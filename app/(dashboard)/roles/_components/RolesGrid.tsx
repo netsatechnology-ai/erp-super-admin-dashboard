@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Role } from "./RoleDetailModal";
+import Pagination from "@/components/ui/Pagination";
 
 // Extended Role type support for status
 export interface status  {
@@ -25,9 +26,11 @@ export interface status  {
 interface RolesGridProps {
   roles: Role[];
   onOpenDetail: (role: Role) => void;
+  filter:any,
+  setFilter:any,
 }
 
-export function RolesGrid({ roles, onOpenDetail }: RolesGridProps) {
+export function RolesGrid({ roles, onOpenDetail,filter, setFilter }: RolesGridProps) {
   if (roles.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center text-xs text-muted-foreground">
@@ -68,11 +71,12 @@ export function RolesGrid({ roles, onOpenDetail }: RolesGridProps) {
   };
 
   return (
+    <div>
     <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       {roles.map((role) => {
-        const visiblePermissions = role.permissions.slice(0, 3);
+        const visiblepermissionKeys = role.permissionKeys.slice(0, 3);
         const remainingCount =
-          role.permissions.length - visiblePermissions.length;
+          role.permissionKeys.length - visiblepermissionKeys.length;
 
         return (
           <Card
@@ -128,13 +132,13 @@ export function RolesGrid({ roles, onOpenDetail }: RolesGridProps) {
                 <span>Assigned users</span>
               </div>
 
-              {/* Permissions Subset */}
+              {/* permissionKeys Subset */}
               <div className="space-y-1.5">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Permissions Included
+                  permissionKeys Included
                 </span>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {visiblePermissions.map((perm, idx) => (
+                  {visiblepermissionKeys.map((perm, idx) => (
                     <span
                       key={idx}
                       className="inline-flex items-center gap-1 rounded-md bg-accent/60 px-2 py-1 text-[11px] font-medium text-foreground"
@@ -161,6 +165,14 @@ export function RolesGrid({ roles, onOpenDetail }: RolesGridProps) {
           </Card>
         );
       })}
+     
+    </div>
+     <Pagination 
+                      filter={filter}
+                      setFilter={setFilter}
+            
+                      
+                      />
     </div>
   );
 }

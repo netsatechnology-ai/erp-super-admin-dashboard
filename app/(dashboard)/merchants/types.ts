@@ -1,7 +1,12 @@
 export type MerchantStatus = "APPROVED" | "COMPLETE" | "INCOMPLETE";
 
 export interface Merchant {
-  id: string;
+id: string;
+tin: string;
+categoryId: string;
+managerFullName: string;
+managerPhoneNumber: string;
+
   name: string;
   category: string;
   tinNumber: string;

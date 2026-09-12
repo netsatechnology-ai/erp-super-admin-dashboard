@@ -22,12 +22,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable)}>
-      <body className="antialiased bg-background text-foreground">
+    <html
+      lang="en"
+      className={cn("font-sans", inter.variable)}
+      suppressHydrationWarning
+    >
+      <body
+        className="antialiased bg-background text-foreground"
+        suppressHydrationWarning
+      >
         <Providers>
-          <AuthGuard>
-          {children}
-          </AuthGuard></Providers>
+          <AuthGuard>{children}</AuthGuard>
+        </Providers>
       </body>
     </html>
   );
